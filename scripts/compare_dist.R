@@ -84,9 +84,6 @@ RunRappor <- function(prefix_case, prefix_instance, ctx) {
   # Switch to LoadMapFile if want to cache the result
   map <- ReadMapFile(m, ctx$params)
 
-  Log("!!!!!!!!!!!!!!!!!!!Map:")
-  str(ctx$params)
-
   # Main decode.R API
   timing <- system.time({
     res <- Decode(counts, map$map, ctx$params)

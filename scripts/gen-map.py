@@ -1,4 +1,7 @@
 #!/usr/bin/python
+#
+# ./gen-map.py <params.csv>
+#
 
 import sys
 import csv
@@ -7,12 +10,11 @@ sys.path.insert(0, '/home/vagrant/rappor/client/python')
 
 import rappor
 
-def HashCandidates(params, stdin, stdout):
+def HashCandidates(params, csv_in, csv_out):
   num_bloombits = params.num_bloombits
-  csv_out = csv.writer(stdout)
 
-  for line in stdin:
-    word = line.strip()
+  for line in csv_in:
+    word = line[0]
     row = [word]
     for cohort in xrange(params.num_cohorts):
       bloom_bits = rappor.get_bloom_bits(word, cohort, params.num_hashes,
@@ -25,5 +27,9 @@ def HashCandidates(params, stdin, stdout):
 
     csv_out.writerow(row)
 
-
-HashCandidates(rappor.Params(), open(sys.argv[1]), sys.stdout)
+params = None
+with open(sys.argv[1]) as f:
+  params = rappor.Params.from_csv(f)
+csv_in = csv.reader(sys.stdin)
+csv_out = csv.writer(sys.stdout)
+HashCandidates(rappor.Params(), csv_in, csv_out)
