@@ -213,8 +213,10 @@ CompareRapporVsActual <- function(ctx) {
 
   # Return plot data and metrics
   data <- rbind(r, a)
-  write.csv(data, "myoutput.txt")
-  Log("Myoutput written")
+
+  write.csv(data, "all_output.txt")
+  Log("All output written to the file")
+
   list(plot_data = data, metrics = metrics)
 }
 
@@ -264,10 +266,10 @@ main <- function(parsed) {
   ctx$actual <- LoadActual(input_instance_prefix)
 
   d <- CompareRapporVsActual(ctx)
-  p <- PlotAll(d$plot_data, options$title)
+  # p <- PlotAll(d$plot_data, options$title)
 
   WriteSummary(d$metrics, output_dir)
-  WritePlot(p, output_dir)
+  # WritePlot(p, output_dir)
 }
 
 if (is_main) {
