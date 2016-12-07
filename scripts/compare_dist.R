@@ -125,14 +125,18 @@ LoadActual <- function(prefix_instance) {
   d  # return this data frame
 }
 
+# <song_id> to <int>, for graphing
+StringToInt <- function(x) {
+  x <- as.factor(x)
+  levels(x) <- 1:length(levels(x))
+  x <- as.numeric(x)
+}
+
 CompareRapporVsActual <- function(ctx) {
   # Prepare input data to be plotted
 
   actual <- ctx$actual  # from the ground truth file
   rappor <- ctx$rappor  # from output of AnalyzeRAPPOR
-
-  # "s12" -> 12, for graphing
-  StringToInt <- function(x) as.integer(substring(x, 2))
 
   actual_values <- StringToInt(actual$string)
   rappor_values <- StringToInt(rappor$string)
@@ -147,23 +151,27 @@ CompareRapporVsActual <- function(ctx) {
 
   total <- sum(actual$count)
   a <- data.frame(index = actual_values,
+                  id = actual$string,
                   # Calculate the true proportion
                   proportion = actual$count / total,
                   dist = "actual")
 
   r <- data.frame(index = rappor_values,
+                  id = rappor$string,
                   proportion = rappor$proportion,
                   dist = rep("rappor", length(rappor_values)))
 
   # Extend a and r with the values that they are missing.
   if (length(rappor_only) > 0) {
     z <- data.frame(index = rappor_only,
+                    id = "false_neg",
                     proportion = 0.0,
                     dist = "actual")
     a <- rbind(a, z)
   }
   if (length(actual_only) > 0) {
     z <- data.frame(index = actual_only,
+                    id = "false_pos",
                     proportion = 0.0,
                     dist = "rappor")
     r <- rbind(r, z)
@@ -204,7 +212,10 @@ CompareRapporVsActual <- function(ctx) {
   str(metrics)
 
   # Return plot data and metrics
-  list(plot_data = rbind(r, a), metrics = metrics)
+  data <- rbind(r, a)
+  write.csv(data, "myoutput.txt")
+  Log("Myoutput written")
+  list(plot_data = data, metrics = metrics)
 }
 
 # Colors selected to be friendly to the color blind:
@@ -214,8 +225,8 @@ palette <- c("#E69F00", "#56B4E9")
 PlotAll <- function(d, title) {
   # NOTE: geom_bar makes a histogram by default; need stat = "identity"
   g <- ggplot(d, aes(x = index, y = proportion, fill = factor(dist)))
-  b <- geom_bar(stat = "identity", width = 0.7,
-                position = position_dodge(width = 0.8))
+  b <- geom_bar(stat = "identity", lwd=0.5)
+  # b <- geom_density(stat = "density", position = "identity")
   t <- ggtitle(title)
   g + b + t + scale_fill_manual(values=palette)
 }
